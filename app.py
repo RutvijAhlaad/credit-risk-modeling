@@ -74,7 +74,7 @@ if st.button("Predict Risk"):
             "Saving accounts": [
                 encoders["Saving accounts"].transform([saving_accounts])[0]
             ],
-            "Checking accounts": [
+            "Checking account": [
                 encoders["Checking accounts"].transform([checking_accounts])[0]
             ],
             "Credit amount": [credit_amount],
