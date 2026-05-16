@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Load trained model
+# Load model
 model = joblib.load("extra_trees_credit_model.pkl")
 
 # Load encoders
@@ -13,19 +13,18 @@ encoders = {
     "Checking accounts": joblib.load("Checking_accounts_encoder.pkl")
 }
 
-# App title
 st.title("Credit Risk Prediction Application")
 
 st.write(
     "Enter applicant information to predict whether the credit risk is GOOD or BAD."
 )
 
-# User Inputs
-age = st.number_input("Age", min_value=18, max_value=80, value=30)
+# Inputs
+age = st.number_input("Age", 18, 80, 30)
 
 sex = st.selectbox(
     "Sex",
-    ["male", "female"]
+    list(encoders["Sex"].classes_)
 )
 
 job = st.number_input(
@@ -37,17 +36,17 @@ job = st.number_input(
 
 housing = st.selectbox(
     "Housing",
-    ["own", "rent", "free"]
+    list(encoders["Housing"].classes_)
 )
 
 saving_accounts = st.selectbox(
     "Saving Accounts",
-    ["little", "moderate", "rich", "quite rich"]
+    list(encoders["Saving accounts"].classes_)
 )
 
 checking_accounts = st.selectbox(
     "Checking Accounts",
-    ["little", "moderate", "rich"]
+    list(encoders["Checking accounts"].classes_)
 )
 
 credit_amount = st.number_input(
@@ -62,24 +61,32 @@ duration = st.number_input(
     value=12
 )
 
-# Create input dataframe
-input_df = pd.DataFrame({
-    "Age": [age],
-    "Sex": [encoders["Sex"].transform([sex])[0]],
-    "Job": [job],
-    "Housing": [encoders["Housing"].transform([housing])[0]],
-    "Saving accounts": [encoders["Saving accounts"].transform([saving_accounts])[0]],
-    "Checking accounts": [encoders["Checking accounts"].transform([checking_accounts])[0]],
-    "Credit amount": [credit_amount],
-    "Duration": [duration]
-})
-
-# Prediction
+# Predict
 if st.button("Predict Risk"):
 
-    prediction = model.predict(input_df)[0]
+    try:
 
-    if prediction == 1:
-        st.success("The predicted credit risk is: GOOD")
-    else:
-        st.error("The predicted credit risk is: BAD")
+        input_df = pd.DataFrame({
+            "Age": [age],
+            "Sex": [encoders["Sex"].transform([sex])[0]],
+            "Job": [job],
+            "Housing": [encoders["Housing"].transform([housing])[0]],
+            "Saving accounts": [
+                encoders["Saving accounts"].transform([saving_accounts])[0]
+            ],
+            "Checking accounts": [
+                encoders["Checking accounts"].transform([checking_accounts])[0]
+            ],
+            "Credit amount": [credit_amount],
+            "Duration": [duration]
+        })
+
+        prediction = model.predict(input_df)[0]
+
+        if prediction == 1:
+            st.success("The predicted credit risk is: GOOD")
+        else:
+            st.error("The predicted credit risk is: BAD")
+
+    except Exception as e:
+        st.error(f"Error: {e}")
